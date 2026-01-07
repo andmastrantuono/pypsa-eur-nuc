@@ -1364,48 +1364,74 @@ def collect_kwargs(
     return model_kwargs, solve_kwargs
 
 
+def apply_modularity_from_config(n):
+    """
+    Legge la configurazione 'modularity' e applica vincoli interi.
+    """
+    solving_conf = n.config.get("solving", {})
+    mod_opts = solving_conf.get("modularity", {})
+    
+    if not mod_opts.get("enable"):
+        return
+
+    print("\n" + "="*50)
+    print("   ATTIVAZIONE MODULARITÀ (SETTINGS DA CONFIG)")
+    print("="*50)
+    
+    target_techs = mod_opts.get("nom_mod", {})
+    
+    for tech_name, module_size in target_techs.items():
+        module_size = float(module_size)
+        
+        mask = n.generators.carrier == tech_name
+        
+        if not mask.any():
+            mask = n.generators.carrier.astype(str).str.contains(tech_name, case=False)
+        
+        if not mask.any():
+            print(f"   [SKIP] Tecnologia '{tech_name}' non trovata nella rete.")
+            continue
+            
+        items = n.generators.index[mask]
+        real_name = n.generators.loc[items[0], "carrier"]
+        
+        print(f"   [FIX] Tech config: '{tech_name}' -> Trovati {len(items)} generatori '{real_name}'.")
+        print(f"         Applicazione vincolo: Blocchi da {module_size} MW.")
+
+        n.model.add_variables(lower=0, upper=100000, 
+                              coords=[items], 
+                              name=f"n_units_{real_name}", 
+                              binary=False, integer=True)
+        
+        p_nom_vars = n.model["Generator-p_nom"].loc[items]
+        n_units_vars = n.model[f"n_units_{real_name}"]
+        
+        lhs = p_nom_vars - (n_units_vars * module_size)
+        
+        n.model.add_constraints(lhs == 0, name=f"modularity_{real_name}")
+        print(f"   [OK] Vincolo attivato con successo.")
+
+    print("="*50 + "\n")
+
 def create_optimization_model(
-    n: pypsa.Network,
-    config: dict,
-    params: dict,
-    model_kwargs: dict,
-    solve_kwargs: dict,
-    planning_horizons: str | None = None,
-) -> None:
-    """
-    Prepare optimization problem by creating model and adding extra functionality.
-
-    This function:
-    1. Attaches config and params to network for extra_functionality
-    2. Creates the optimization model
-    3. Adds extra functionality (custom constraints)
-
-    Parameters
-    ----------
-    n : pypsa.Network
-        The PyPSA network instance
-    config : dict
-        Configuration dictionary containing solver settings
-    params : dict
-        Dictionary of solving parameters
-    model_kwargs : dict
-        Arguments for n.optimize.create_model()
-    solve_kwargs : dict
-        Arguments for n.optimize.solve_model()
-    planning_horizons : str, optional
-        The current planning horizon year or None in perfect foresight
-    """
-    # Add config and params to network for extra_functionality
+    n,
+    config,
+    params,
+    model_kwargs,
+    solve_kwargs,
+    planning_horizons=None,
+):
     n.config = config
     n.params = params
 
-    # Create optimization model
     logger.info("Creating optimization model...")
+    
     n.optimize.create_model(**model_kwargs)
+    
+    apply_modularity_from_config(n)
+    # -----------------------------
 
-    # Add extra functionality (custom constraints)
-    logger.info("Adding extra functionality (custom constraints)...")
-    extra_functionality(n, n.snapshots, planning_horizons)
+    return model_kwargs, solve_kwargs
 
 
 if __name__ == "__main__":
