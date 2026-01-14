@@ -427,7 +427,6 @@ def prepare_network(
     planning_horizons: str | None,
     co2_sequestration_potential: dict[str, float],
     limit_max_growth: dict[str, Any] | None = None,
-    config: dict = None,   #MODULARITY
 ) -> None:
     """
     Prepare network with various constraints and modifications.
@@ -526,17 +525,7 @@ def prepare_network(
         add_co2_sequestration_limit(
             n, limit_dict=limit_dict, planning_horizons=planning_horizons
         )
-# MODULARITY
-    if config and "modular_expansion" in config:
-        for carrier, mod_size in config["modular_expansion"].items():
-            # Trova i generatori di quel tipo (es. nuclear) che sono estendibili
-            idx = n.generators.index[
-                (n.generators.carrier == carrier) & n.generators.p_nom_extendable
-            ]
-            if not idx.empty:
-                logger.info(f"Setting modular expansion for {carrier}: {mod_size} MW steps")
-                n.generators.loc[idx, "p_nom_mod"] = float(mod_size)
-    # --- MODULAR EXPANSION END ---
+
 
 def add_CCL_constraints(
     n: pypsa.Network, config: dict, planning_horizons: str | None
@@ -1452,7 +1441,6 @@ if __name__ == "__main__":
         planning_horizons=planning_horizons,
         co2_sequestration_potential=snakemake.params["co2_sequestration_potential"],
         limit_max_growth=snakemake.params.get("sector", {}).get("limit_max_growth"),
-        config=snakemake.config,  #MODULARITY
     )
 
     # Determine solve mode

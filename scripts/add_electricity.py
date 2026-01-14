@@ -1120,24 +1120,6 @@ if __name__ == "__main__":
         fuel_price=fuel_price,
     )
 
-    # NUCLEAR SMR/LR
-    new_nuclear_techs = ["nuclear_smr", "nuclear_lr"]
-    
-    for tech in new_nuclear_techs:
-        if tech in extendable_carriers["Generator"] and tech in costs.index:
-            n.madd("Generator",
-                n.buses.index,
-                suffix=" " + tech,
-                carrier=tech,
-                p_nom_extendable=True,
-                p_nom_min=0,
-                capital_cost=costs.at[tech, "capital_cost"],
-                marginal_cost=costs.at[tech, "marginal_cost"],
-                efficiency=costs.at[tech, "efficiency"],
-                lifetime=costs.at[tech, "lifetime"]
-            )
-            print(f"Added extendable '{tech}' generators to all buses.")
-
     attach_wind_and_solar(
         n,
         costs,
