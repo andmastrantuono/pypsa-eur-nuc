@@ -1,0 +1,51 @@
+snapshots:
+  start: "2013-01-01"
+  end: "2014-01-01"
+
+enable:
+  retrieve: auto
+  retrieve_databundle: false
+  retrieve_cost_data: false   # Mantiene i tuoi costi modificati
+  build_cutout: false
+  retrieve_cutout: false
+
+
+countries: ['FR']
+
+scenario:
+  clusters: [4]
+
+electricity:
+  extendable_carriers:
+    Generator: [solar, solar-hsat, onwind, offwind-ac, offwind-dc, offwind-float, OCGT, CCGT, nuclear]
+
+modular_expansion:
+  nuclear: 1000  # Taglia del modulo in MW (es. reattori da 1GW)
+
+clustering:
+  temporal:
+    resolution_elec: 12
+
+sector:
+  transport: false
+  heating: false
+  biomass: false
+  industry: false
+  shipping: false
+  aviation: false
+  agriculture: false
+  fossil_fuels: false
+
+solving:
+  solver:
+    name: gurobi
+    options: gurobi-milp
+
+  solver_options:
+    gurobi-milp:
+      Method: 2
+      Crossover: 0
+      MIPGap: 0.01
+      BarConvTol: 0.00001      # Modificato da 1e-5 a decimale
+      FeasibilityTol: 0.00001  # Modificato da 1e-5 a decimale
+      Threads: 4
