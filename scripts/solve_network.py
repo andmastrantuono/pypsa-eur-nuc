@@ -527,16 +527,83 @@ def prepare_network(
             n, limit_dict=limit_dict, planning_horizons=planning_horizons
         )
 # MODULARITY
+# --- DYNAMIC MODULAR EXPANSION (Targeting PROCESSED Costs) ---
     if config and "modular_expansion" in config:
+        
+        # 1. CERCHIAMO IL FILE CORRETTO (QUELLO PROCESSATO CON I CUSTOM COSTS)
+        cost_year = config.get("costs", {}).get("year", "2050")
+        
+        # TENTATIVO A: Cerchiamo il file "processed" (dove finiscono i custom_costs)
+        cost_file = f"resources/costs_{cost_year}_processed.csv"
+        
+        # TENTATIVO B: Fallback al file standard se il processed non esiste
+        import os
+        if not os.path.exists(cost_file):
+            logger.warning(f"Processed cost file {cost_file} not found. Trying raw file.")
+            cost_file = f"resources/costs_{cost_year}.csv"
+        
+        try:
+            # Leggiamo il CSV
+            costs_df = pd.read_csv(cost_file, index_col=0)
+            logger.info(f"Loaded cost data from {cost_file}")
+        except Exception as e:
+            logger.warning(f"Could not load cost file {cost_file}: {e}. Using defaults.")
+            costs_df = pd.DataFrame() 
+
         for carrier, mod_size in config["modular_expansion"].items():
-            # Trova i generatori di quel tipo (es. nuclear) che sono estendibili
-            idx = n.generators.index[
-                (n.generators.carrier == carrier) & n.generators.p_nom_extendable
-            ]
-            if not idx.empty:
-                logger.info(f"Setting modular expansion for {carrier}: {mod_size} MW steps")
-                n.generators.loc[idx, "p_nom_mod"] = float(mod_size)
-    # --- MODULAR EXPANSION END ---
+            
+            # 2. ESTRAIAMO I PARAMETRI
+            if carrier in costs_df.index:
+                tech_data = costs_df.loc[carrier]
+                ref_cost = tech_data.get("capital_cost", 0.0) 
+                ref_eff = tech_data.get("efficiency", 0.33)
+                ref_marg = tech_data.get("marginal_cost", 10.0)
+                
+                logger.info(f"Read costs for {carrier} from {cost_file}: Cap={ref_cost:.2f} EUR/MW/a")
+            else:
+                logger.warning(f"Carrier {carrier} not found in {cost_file}. Using defaults.")
+                ref_cost = 100000.0 * 0.08 
+                ref_eff = 0.33
+                ref_marg = 10.0
+
+            logger.info(f"Applying Modular Expansion for {carrier} ({mod_size} MW) on ALL buses.")
+
+            # 3. APPLICHIAMO A TUTTA LA RETE
+            for bus in n.buses.index:
+                new_gen_name = f"{bus} {carrier} new"
+
+                # A. GESTIONE ESISTENTE
+                current_gens = n.generators.index[
+                    (n.generators.bus == bus) & 
+                    (n.generators.carrier == carrier) &
+                    (~n.generators.index.str.contains("new"))
+                ]
+
+                if not current_gens.empty:
+                    for gen_name in current_gens:
+                        existing_cap = n.generators.at[gen_name, "p_nom_min"]
+                        n.generators.at[gen_name, "p_nom_extendable"] = False
+                        n.generators.at[gen_name, "p_nom"] = existing_cap
+                        n.generators.at[gen_name, "p_nom_min"] = existing_cap
+                        n.generators.at[gen_name, "p_nom_max"] = existing_cap
+                        n.generators.at[gen_name, "capital_cost"] = 0.0
+                
+                # B. CREAZIONE NUOVO
+                if new_gen_name not in n.generators.index:
+                    n.add("Generator",
+                          new_gen_name,
+                          bus=bus,
+                          carrier=carrier,
+                          p_nom_extendable=True,
+                          p_nom_mod=float(mod_size),
+                          p_nom=0.0,
+                          p_min_pu=0.0,
+                          p_max_pu=1.0,
+                          efficiency=ref_eff,
+                          marginal_cost=ref_marg,
+                          capital_cost=ref_cost
+                    )
+    # --- END DYNAMIC EXPANSION ---
 
 def add_CCL_constraints(
     n: pypsa.Network, config: dict, planning_horizons: str | None
