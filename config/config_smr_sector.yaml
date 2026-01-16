@@ -19,14 +19,6 @@ electricity:
   extendable_carriers:
     Generator: [solar, solar-hsat, onwind, offwind-ac, offwind-dc, offwind-float, OCGT, CCGT, nuclear_epr, nuclear_smr, nuclear_htr]
 
-sector:
-  conventional_generation:
-    OCGT: gas
-    CCGT: gas
-    nuclear_epr: nuclear_epr
-    nuclear_smr: nuclear_smr
-    nuclear_htr: nuclear_htr
-
 modular_expansion:
   nuclear_epr: 1650  # Taglia del modulo in MW
   nuclear_smr: 470
@@ -46,6 +38,13 @@ sector:
   aviation: false
   agriculture: false
   fossil_fuels: false
+  
+  conventional_generation:
+      OCGT: gas
+      CCGT: gas
+      nuclear_epr: nuclear_epr
+      nuclear_smr: nuclear_smr
+      nuclear_htr: nuclear_htr
 
 solving:
   solver:
