@@ -50,6 +50,14 @@ sector:
   aviation: false
   agriculture: false
   fossil_fuels: false
+  conventional_generation:
+    OCGT: gas
+    CCGT: gas
+    coal: coal
+    lignite: lignite
+    nuclear: nuclear
+    nuclear_epr: nuclear_epr
+    nuclear_smr: nuclear_smr
 
 solving:
   solver:
