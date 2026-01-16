@@ -17,12 +17,24 @@ scenario:
 
 electricity:
   extendable_carriers:
-    Generator: [solar, solar-hsat, onwind, offwind-ac, offwind-dc, offwind-float, OCGT, CCGT, nuclear_epr, nuclear_smr, nuclear_htr]
+    Generator: [solar, solar-hsat, onwind, offwind-ac, offwind-dc, offwind-float, OCGT, CCGT, nuclear_epr, nuclear_smr]
 
 modular_expansion:
   nuclear_epr: 1650  # Taglia del modulo in MW
   nuclear_smr: 470
-  nuclear_htr: 82.5
+
+pypsa_eur:
+  Generator:
+  - onwind
+  - offwind-ac
+  - offwind-dc
+  - offwind-float
+  - solar-hsat
+  - solar
+  - ror
+  - nuclear
+  - nuclear_epr
+  - nuclear_smr
 
 clustering:
   temporal:
@@ -38,13 +50,6 @@ sector:
   aviation: false
   agriculture: false
   fossil_fuels: false
-  
-  conventional_generation:
-      OCGT: gas
-      CCGT: gas
-      nuclear_epr: nuclear_epr
-      nuclear_smr: nuclear_smr
-      nuclear_htr: nuclear_htr
 
 solving:
   solver:
