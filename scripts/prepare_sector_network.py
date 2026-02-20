@@ -6584,4 +6584,39 @@ if __name__ == "__main__":
     sanitize_carriers(n, snakemake.config)
     sanitize_locations(n)
 
+# -------------------------------------------------------------------------
+    # INIZIO FIX FORZATO NUCLEARE ("TERMINATOR")
+    # -------------------------------------------------------------------------
+    print("\n☢️  AVVIO FIX TOPOLOGICO NUCLEARE...")
+    
+    # 1. Trova tutti i generatori nucleari (EPR, SMR)
+    #    Cerca qualsiasi cosa che contenga la stringa "nuclear" nel carrier
+    nuc_gens = n.generators[n.generators.carrier.str.contains("nuclear")].index
+    
+    moved_count = 0
+    
+    for gen in nuc_gens:
+        old_bus = n.generators.at[gen, "bus"]
+        
+        # 2. Controlla se sono sul bus sbagliato
+        #    Se il bus contiene "low voltage", "heat", "water", o "urban"
+        if any(x in old_bus for x in ["low voltage", "heat", "water", "urban"]):
+            
+            # 3. Calcola il Bus Giusto (Alta Tensione)
+            #    I bus AT sono sempre le prime due parole (es. "IT0 0")
+            #    Esempio: "IT0 0 rural heat" -> splitta in ["IT0", "0", "rural", "heat"]
+            parts = old_bus.split()
+            
+            # Per sicurezza, ricostruiamo solo se ha senso (almeno 2 parti e inizia con IT/EU)
+            if len(parts) >= 2:
+                new_bus = f"{parts[0]} {parts[1]}"
+                
+                # 4. Applica lo spostamento
+                n.generators.at[gen, "bus"] = new_bus
+                moved_count += 1
+                # print(f"   -> Spostato {gen}: da '{old_bus}' a '{new_bus}'")
+
+    print(f"☢️  FIX COMPLETATO: {moved_count} generatori nucleari spostati sull'Alta Tensione.\n")
+    # -------------------------------------------------------------------------
+
     n.export_to_netcdf(snakemake.output[0])

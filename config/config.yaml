@@ -23,19 +23,6 @@ modular_expansion:
   nuclear_epr: 1650  # Taglia del modulo in MW
   nuclear_smr: 470
 
-pypsa_eur:
-  Generator:
-  - onwind
-  - offwind-ac
-  - offwind-dc
-  - offwind-float
-  - solar-hsat
-  - solar
-  - ror
-  - nuclear
-  - nuclear_epr
-  - nuclear_smr
-
 clustering:
   temporal:
     resolution_elec: false
@@ -50,14 +37,6 @@ sector:
   aviation: false
   agriculture: false
   fossil_fuels: false
-  conventional_generation:
-    OCGT: gas
-    CCGT: gas
-    coal: coal
-    lignite: lignite
-    nuclear: nuclear
-    nuclear_epr: nuclear_epr
-    nuclear_smr: nuclear_smr
 
 solving:
   solver:
