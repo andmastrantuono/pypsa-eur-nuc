@@ -1167,6 +1167,28 @@ if __name__ == "__main__":
     attach_storageunits(n, costs, extendable_carriers, max_hours)
     attach_stores(n, costs, extendable_carriers)
 
+    #AM --- INIZIO MODIFICA: Rimuovi generatori nucleari modulari fuori dall'Italia ---
+    for tech in ['nuclear_epr', 'nuclear_smr']:
+        if tech in n.generators.carrier.values:
+            gens = n.generators[n.generators.carrier == tech]
+            
+            # 1. Trova quelli da eliminare: esteri o su bus virtuali
+            to_drop = gens[
+                (~gens.bus.str.startswith('IT')) | 
+                (gens.bus.str.contains('H2|battery'))
+            ].index
+            
+            if len(to_drop) > 0:
+                n.mremove("Generator", to_drop)
+                logger.info(f"Rimosse {len(to_drop)} centrali {tech} non valide.")
+            
+            # 2. SALVAVITA PER GUROBI: Imposta un limite massimo realistico (es. 15.000 MW)
+            # Questo impedisce al Crossover di calcolare bound tendenti all'infinito
+            remaining = n.generators[n.generators.carrier == tech].index
+            if len(remaining) > 0:
+                n.generators.loc[remaining, 'p_nom_max'] = 15000
+    #AM --- FINE MODIFICA ---
+
     sanitize_carriers(n, snakemake.config)
     if "location" in n.buses:
         sanitize_locations(n)

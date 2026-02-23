@@ -427,7 +427,7 @@ def prepare_network(
     planning_horizons: str | None,
     co2_sequestration_potential: dict[str, float],
     limit_max_growth: dict[str, Any] | None = None,
-    config: dict = None,   #MODULARITY
+    config: dict = None,   #AM MODULARITY
 ) -> None:
     """
     Prepare network with various constraints and modifications.
@@ -526,7 +526,7 @@ def prepare_network(
         add_co2_sequestration_limit(
             n, limit_dict=limit_dict, planning_horizons=planning_horizons
         )
-# MODULARITY
+#AM MODULARITY
 # --- DYNAMIC MODULAR EXPANSION (Targeting PROCESSED Costs) ---
     if config and "modular_expansion" in config:
         
@@ -603,7 +603,7 @@ def prepare_network(
                           marginal_cost=ref_marg,
                           capital_cost=ref_cost
                     )
-    # --- END DYNAMIC EXPANSION ---
+    #AM --- END DYNAMIC EXPANSION ---
 
 def add_CCL_constraints(
     n: pypsa.Network, config: dict, planning_horizons: str | None
@@ -1519,7 +1519,7 @@ if __name__ == "__main__":
         planning_horizons=planning_horizons,
         co2_sequestration_potential=snakemake.params["co2_sequestration_potential"],
         limit_max_growth=snakemake.params.get("sector", {}).get("limit_max_growth"),
-        config=snakemake.config,  #MODULARITY
+        config=snakemake.config,  #AM MODULARITY
     )
 
     # Determine solve mode
