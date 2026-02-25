@@ -1314,6 +1314,53 @@ if __name__ == "__main__":
     if params.electricity.get("estimate_battery_capacities", False):
         attach_existing_batteries(n, costs, ppl)
 
+#AM--- INIZIO COSTRUZIONE GREENFIELD NUCLEARE ---
+    import pandas as pd
+    
+    # 1. Carichiamo i costi dal tuo file custom_costs.csv (processato)
+    costs = pd.read_csv(snakemake.input.costs, index_col=0)
+    
+    def get_cost(tech, param, default):
+        """Estrae il costo dal CSV in modo sicuro, altrimenti usa il default"""
+        if tech in costs.index and param in costs.columns:
+            return costs.at[tech, param]
+        return default
+
+    # 2. Aggiungiamo i Carrier alla rete per farli riconoscere dai grafici
+    for c, color in [("nuclear", "#ff9000"), ("nuclear_smr", "#00d9ff")]:
+        if c not in n.carriers.index:
+            n.add("Carrier", [c], color=color, nice_name=c.upper()) # <- MODIFICATO QUI
+            
+    # 3. Separiamo la rete tra Italia ed Estero
+    ac_buses = n.buses[n.buses.carrier == "AC"]
+    it_buses = ac_buses[ac_buses.index.str.startswith("IT")].index
+    eu_buses = ac_buses[~ac_buses.index.str.startswith("IT")].index
+
+    # 4. FORZATURA: SMR solo in Italia
+    if len(it_buses) > 0:
+        n.add("Generator", # <- MODIFICATO QUI
+               it_buses + " nuclear_smr",
+               bus=it_buses,
+               carrier="nuclear_smr",
+               p_nom_extendable=True,
+               capital_cost=get_cost("nuclear_smr", "capital_cost", 300000),
+               marginal_cost=get_cost("nuclear_smr", "marginal_cost", 10),
+               efficiency=get_cost("nuclear_smr", "efficiency", 0.33),
+               lifetime=get_cost("nuclear_smr", "lifetime", 60))
+               
+    # 5. FORZATURA: Nucleare Standard solo all'Estero
+    if len(eu_buses) > 0:
+        n.add("Generator", # <- MODIFICATO QUI
+               eu_buses + " nuclear",
+               bus=eu_buses,
+               carrier="nuclear",
+               p_nom_extendable=True,
+               capital_cost=get_cost("nuclear", "capital_cost", 400000),
+               marginal_cost=get_cost("nuclear", "marginal_cost", 10),
+               efficiency=get_cost("nuclear", "efficiency", 0.33),
+               lifetime=get_cost("nuclear", "lifetime", 60))
+    #AM --- FINE COSTRUZIONE GREENFIELD NUCLEARE ---
+
     sanitize_carriers(n, snakemake.config)
     if "location" in n.buses:
         sanitize_locations(n)
