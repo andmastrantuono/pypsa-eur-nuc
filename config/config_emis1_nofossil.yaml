@@ -1,0 +1,65 @@
+snapshots:
+  start: "2013-01-01"
+  end: "2014-01-01"
+
+enable:
+  retrieve: false
+  retrieve_databundle: false
+  retrieve_cost_data: false   # Mantiene i tuoi costi modificati
+  build_cutout: false
+  retrieve_cutout: false
+
+
+clustering: 
+  mode: administrative  
+  administrative:
+    #level: 0  
+    IT: 2  
+    AT: 0
+    CH: 0
+    FR: 0
+    GR: 0
+    ME: 0
+    SI: 0
+  temporal:
+    resolution_elec: "3h"
+
+countries:
+- IT
+- AT
+- CH
+- FR
+- GR
+- ME
+- SI
+
+
+electricity:
+  extendable_carriers:
+    Generator: [solar, solar-hsat, onwind, offwind-ac, offwind-dc, offwind-float, nuclear, nuclear_smr] #no nuclear_epr
+  co2limit_enable: true
+  co2limit: 1312500.0 #1% 2025
+  conventional_carriers:
+  - nuclear
+  - geothermal
+  - waste
+  - biomass
+
+sector:
+  transport: false
+  heating: false
+  biomass: false
+  industry: false
+  shipping: false
+  aviation: false
+  agriculture: false
+  fossil_fuels: false
+
+solving:
+  solver:
+    name: gurobi
+  solver_options:
+    gurobi:
+      Method: 2
+      Crossover: 0        # In un LP puro, spegnere il Crossover funziona ed è velocissimo!
+      NumericFocus: 2     # Lo teniamo per evitare degenerazioni della matrice
