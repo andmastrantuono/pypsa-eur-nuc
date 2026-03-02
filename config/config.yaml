@@ -14,7 +14,7 @@ clustering:
   mode: administrative  
   administrative:
     #level: 0  
-    IT: 2  
+    IT: 3 
     AT: 0
     CH: 0
     FR: 0
@@ -22,7 +22,7 @@ clustering:
     ME: 0
     SI: 0
   temporal:
-    resolution_elec: "3h"
+    resolution_elec: "1h"
 
 countries:
 - IT
@@ -33,13 +33,17 @@ countries:
 - ME
 - SI
 
-#scenario:
-#  clusters:
-#    - 6
 
 electricity:
   extendable_carriers:
-    Generator: [solar, solar-hsat, onwind, offwind-ac, offwind-dc, offwind-float, OCGT, CCGT, nuclear, nuclear_smr] #no nuclear_epr
+    Generator: [solar, solar-hsat, onwind, offwind-ac, offwind-dc, offwind-float, nuclear, nuclear_smr] #no nuclear_epr
+  co2limit_enable: true
+  co2limit: 1312500.0 #1% 2025
+  conventional_carriers:
+  - nuclear
+  - geothermal
+  - waste
+  - biomass
 
 sector:
   transport: false

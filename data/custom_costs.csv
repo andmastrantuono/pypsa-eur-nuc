@@ -5,7 +5,7 @@ planning_horizon,technology,parameter,value,unit,source,further description
 2050,nuclear_epr,efficiency,0.3856,p.u.,ARIS IAEA,
 2050,nuclear_epr,lifetime,60.0,years,ARIS IAEA,
 2050,nuclear_epr,fuel,2.7917,EUR/MWh_th,ESA Annual Report,
-2050,nuclear_smr,investment,2000.0,EUR/kW_e,Stima SMR,
+2050,nuclear_smr,investment,4500.0,EUR/kW_e,Stima SMR,
 2050,nuclear_smr,FOM,2.53,%/year,"Nuclear Energy Cost Estimates for Net Zero World Initiative. Idaho National Laboratory (2024). INL/RPT-23-74378" https://inldigitallibrary.inl.gov/sites/sti/sti/Sort_130016.pdf. Table 2 average Operations/OCC value for each scenario,
 2050,nuclear_smr,VOM,6.49,EUR/MWh_e,"Nuclear Energy Cost Estimates for Net Zero World Initiative. Idaho National Laboratory (2024). INL/RPT-23-74378" https://inldigitallibrary.inl.gov/sites/sti/sti/Sort_130016.pdf. Table 2 base scenario,
 2050,nuclear_smr,efficiency,0.3856,p.u.,ARIS IAEA,
